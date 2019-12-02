@@ -1,36 +1,36 @@
-var aoc01_1 = function() {
-    "use strict"
-    var getFuelForMass = function(mass) {
+let aoc01 = function() {
+    "use strict";
+    let getFuelForMass = function(mass) {
         return Math.max(0, Math.floor(mass/3) - 2);
-    }
+    };
 
-    var getTotalFuelForMass = function(mass) {
-        var fuel = getFuelForMass(mass);
-        var total = fuel;
+    let getTotalFuelForMass = function(mass) {
+        let fuel = getFuelForMass(mass);
+        let total = fuel;
         do {
             fuel = getFuelForMass(fuel);
             total += fuel;
         } while (fuel !== 0);
         return total;
-    }
+    };
 
-    var testCase = function(func, input, expected) {
-        var actual = func(input);
-        console.assert(actual === expected, "%s(%d) is %d (expected %d)", func.name, input, actual, expected);
-    }
+    let testCase = function(func, input, expected) {
+        let actual = func(input);
+        console.assert(actual === expected, "%s(%s) is %s (expected %s)", func.name, input, actual, expected);
+    };
 
-    var processFile1 = function(inElem, outElem) {
-        var firstFile = document.querySelector(inElem).files[0];
-        var reader = new FileReader();
+    let processFile1 = function(inElem, outElem) {
+        let firstFile = document.querySelector(inElem).files[0];
+        let reader = new FileReader();
         reader.onload = (event) => {
-            const file = event.target.result;
-            const allLines = reader.result.split(/\r\n|\n/);
-            var sum = 0;
-            var re = /^(\d+)$/;
+            //const file = event.target.result;
+            const allLines = reader.result.split(/\r\n|\n/u);
+            let sum = 0;
+            let re = /^(\d+)$/u;
             allLines.forEach( (line) => {
                 //console.log(line);
-                var match = line.match(re);
-                var mass = 0;
+                let match = line.match(re);
+                let mass = 0;
                 if (match) {
                     mass = match[1];
                     sum += getFuelForMass(mass);
@@ -43,20 +43,20 @@ var aoc01_1 = function() {
         };
         reader.readAsText(firstFile);
 
-    }
+    };
 
-    var processFile2 = function(inElem, outElem) {
-        var firstFile = document.querySelector(inElem).files[0];
-        var reader = new FileReader();
+    let processFile2 = function(inElem, outElem) {
+        let firstFile = document.querySelector(inElem).files[0];
+        let reader = new FileReader();
         reader.onload = (event) => {
-            const file = event.target.result;
-            const allLines = reader.result.split(/\r\n|\n/);
-            var sum = 0;
-            var re = /^(\d+)$/;
+            //const file = event.target.result;
+            const allLines = reader.result.split(/\r\n|\n/u);
+            let sum = 0;
+            let re = /^(\d+)$/u;
             allLines.forEach( (line) => {
                 //console.log(line);
-                var match = line.match(re);
-                var mass = 0;
+                let match = line.match(re);
+                let mass = 0;
                 if (match) {
                     mass = match[1];
                     sum += getTotalFuelForMass(mass);
@@ -69,7 +69,7 @@ var aoc01_1 = function() {
         };
         reader.readAsText(firstFile);
 
-    }
+    };
 
     testCase(getFuelForMass, 12, 2);
     testCase(getFuelForMass, 14, 2);

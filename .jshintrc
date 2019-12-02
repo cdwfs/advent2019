@@ -1,0 +1,27 @@
+{
+    "curly": true,
+    "eqeqeq": true,
+    "forin": true,
+    "freeze": true,
+    "futurehostile": true,
+    "globals": {},
+    "latedef": true,
+    "leanswitch": true,
+    "noarg": true,
+    "nocomma": true,
+    "nonbsp": true,
+    "nonew": true,
+    "noreturnawait": true,
+    "regexpu": true,
+    "strict": true,
+    "trailingcomma": true,
+    "undef": true,
+    "unused": "vars",
+    "varstmt": true,
+
+    // Environment
+    "browser": true,
+    "devel": true,
+
+    "esversion": 6
+}
