@@ -7,7 +7,10 @@ let aoc02 = function() {
     
     let testCase = function(func, input, expected, compareFunc) {
         let actual = func(input);
-        console.assert(compareFunc(actual, expected), "%s(%s) is %s (expected %s)", func.name, input, actual, expected);
+        if (!compareFunc(actual, expected)) {
+            document.querySelector("#testResults").innerHTML = `TEST FAILURE:<BR> ${func.name}(${input}) is ${actual}<BR>(expected ${expected})`;
+            throw {msg: "Unit test failure",};
+        }
     };
 
     let checkAddr = function(pgm, ip, addr) {
@@ -18,7 +21,7 @@ let aoc02 = function() {
             throw {
                 pgm: pgm,
                 ip: ip,
-                msg: "ERROR: out of bounds addr (" + addr + ")",
+                msg: `ERROR: out of bounds addr (${addr})`,
             };
         }
     };
@@ -51,7 +54,7 @@ let aoc02 = function() {
                 throw {
                     pgm: pgm,
                     ip: ip,
-                    msg: "ERROR: Unsupported opcode (" + pgm[ip] + ")",
+                    msg: `ERROR: Unsupported opcode (${pgm[ip]})`,
                 };
             }
         } while (true);
@@ -75,11 +78,14 @@ let aoc02 = function() {
         reader.readAsText(firstFile);
     };
 
-    testCase(processIntcodeProgram, [1,9,10,3,2,3,11,0,99,30,40,50,], [3500,9,10,70,2,3,11,0,99,30,40,50,], compareArrays);
-    testCase(processIntcodeProgram, [1,0,0,0,99,], [2,0,0,0,99,], compareArrays);
-    testCase(processIntcodeProgram, [2,3,0,3,99,], [2,3,0,6,99,], compareArrays);
-    testCase(processIntcodeProgram, [2,4,4,5,99,0,], [2,4,4,5,99,9801,], compareArrays);
-    testCase(processIntcodeProgram, [1,1,1,4,99,5,6,0,99,], [30,1,1,4,2,5,6,0,99,], compareArrays);
+    window.onload = function() {
+        testCase(processIntcodeProgram, [1,9,10,3,2,3,11,0,99,30,40,50,], [3500,9,10,70,2,3,11,0,99,30,40,50,], compareArrays);
+        testCase(processIntcodeProgram, [1,0,0,0,99,], [2,0,0,0,99,], compareArrays);
+        testCase(processIntcodeProgram, [2,3,0,3,99,], [2,3,0,6,99,], compareArrays);
+        testCase(processIntcodeProgram, [2,4,4,5,99,0,], [2,4,4,5,99,9801,], compareArrays);
+        testCase(processIntcodeProgram, [1,1,1,4,99,5,6,0,99,], [30,1,1,4,2,5,6,0,99,], compareArrays);
+        document.querySelector("#testResults").innerHTML = "All tests passed!";
+    }
     
     return {
         processFile: processFile,
