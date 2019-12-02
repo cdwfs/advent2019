@@ -1,0 +1,56 @@
+header {
+	color: #007e99;
+	background-color: #004050;
+	font-size: 1.5em;
+	padding: 20px 50px;
+}
+nav {
+	font-size: 1.5em;
+	margin: 5px 0;
+	padding: 20px 50px;
+}
+main {
+	background-color: #E0E0E0;
+	margin: 10px 0;
+	padding: 5px 5px;
+}
+section {
+	background-color: #C0C0C0;
+	float: left
+	padding: 35px 0;
+	position: relative;
+	width: 70%;
+}
+section article {
+	background-color: #808080;
+	margin: 0 50px 40px;
+	padding: 25px 0 0;
+	position: relative;
+}
+section header {
+	font-size: 1em;
+	padding: 0;
+}
+figcaption {
+	font-style: italic;
+	font-size: 0.8em;
+	width: 100%;
+}
+aside {
+	background-color: #FFC0FF;
+	float: right;
+	padding: 70px 10px 30px;
+	position: relative;
+	width: 25%;
+}
+mark {
+	background-color: blue;
+	color: yellow;
+	}
+footer {
+	background-color: #FFFFC0;
+	font-size: 0.8em;
+	font-style: italic;
+	margin: 5px 0;
+	padding: 10px 10px;
+}
