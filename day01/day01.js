@@ -1,3 +1,4 @@
+/* global aoc */
 let aoc01 = function() {
     "use strict";
     let getFuelForMass = function(mass) {
@@ -12,11 +13,6 @@ let aoc01 = function() {
             total += fuel;
         } while (fuel !== 0);
         return total;
-    };
-
-    let testCase = function(func, input, expected) {
-        let actual = func(input);
-        console.assert(actual === expected, "%s(%s) is %s (expected %s)", func.name, input, actual, expected);
     };
 
     let processFile1 = function(inElem, outElem) {
@@ -35,8 +31,13 @@ let aoc01 = function() {
                     mass = match[1];
                     sum += getFuelForMass(mass);
                 }
-            });            
-            document.querySelector(outElem).innerHTML = sum;
+            });
+            const expected = 3423279;
+            if (sum === expected) {
+                document.querySelector(outElem).innerHTML = `${sum} (Correct!)`;
+            } else {
+                document.querySelector(outElem).innerHTML = `${sum} (ERROR: expected ${expected})`;
+            }
         };
         reader.onerror = (event) => {
             alert(event.target.error.name);
@@ -62,7 +63,12 @@ let aoc01 = function() {
                     sum += getTotalFuelForMass(mass);
                 }
             });            
-            document.querySelector(outElem).innerHTML = sum;
+            const expected = 5132018;
+            if (sum === expected) {
+                document.querySelector(outElem).innerHTML = `${sum} (Correct!)`;
+            } else {
+                document.querySelector(outElem).innerHTML = `${sum} (ERROR: expected {$expected}`;
+            }
         };
         reader.onerror = (event) => {
             alert(event.target.error.name);
@@ -71,14 +77,18 @@ let aoc01 = function() {
 
     };
 
-    testCase(getFuelForMass, 12, 2);
-    testCase(getFuelForMass, 14, 2);
-    testCase(getFuelForMass, 1969, 654);
-    testCase(getFuelForMass, 100756, 33583);
-
-    testCase(getTotalFuelForMass, 14, 2);
-    testCase(getTotalFuelForMass, 1969, 966);
-    testCase(getTotalFuelForMass, 100756, 50346);
+    window.onload = function() {
+        // Part 1
+        aoc.testCase(getFuelForMass, [12,], 2);
+        aoc.testCase(getFuelForMass, [14,], 2);
+        aoc.testCase(getFuelForMass, [1969,], 654);
+        aoc.testCase(getFuelForMass, [100756,], 33583);
+        // Part 2
+        aoc.testCase(getTotalFuelForMass, [14,], 2);
+        aoc.testCase(getTotalFuelForMass, [1969,], 966);
+        aoc.testCase(getTotalFuelForMass, [100756,], 50346);
+        document.querySelector("#testResults").innerHTML = "All tests passed!";
+    };
     
     return {
         processFile1: processFile1,

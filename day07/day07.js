@@ -1,20 +1,7 @@
+/* global aoc */
 let aoc07 = function() {
     "use strict";
 
-    let testCase = function(func, args, expected, compareFunc = (a,b) => a === b) {
-        let actual = func(...args); // spread syntax!
-        if (!compareFunc(actual, expected)) {
-            document.querySelector("#testResults").innerHTML = `TEST FAILURE:<BR> ${func.name}(${args}) is ${actual}<BR>(expected ${expected})`;
-            throw "Unit test failure";
-        }
-    };
-
-    const coroutine = function(f, args) {
-        let o = f(...args); // instantiate coroutine
-        o.next(); // execute until first yield
-        return x => o.next(x);
-    };
-    
     // Note: this function may modify pgm in-place! Use a copy if the caller needs to reuse pgm elsewhere.
     let intcodeMachine = function*(pgm) {
         let inputs = yield []; // dummy yield to retrieve initial inputs
@@ -148,7 +135,7 @@ let aoc07 = function() {
     };
     // Helper function if all inputs are known up front
     const processIntcodeProgram = function(pgm, inputs) {
-        let machine = coroutine(intcodeMachine, [pgm,]);
+        let machine = aoc.coroutine(intcodeMachine, [pgm,]);
         const result = machine(inputs);
         if (!result.done) {
             throw "machine expects additional inputs!";
@@ -193,11 +180,11 @@ let aoc07 = function() {
         const phaseSettingsPermutations = getArrayPermutations([5,6,7,8,9,]);
         phaseSettingsPermutations.forEach( phaseSettings => {
             let amplifiers = [
-                coroutine(intcodeMachine, [pgm.slice(),]),
-                coroutine(intcodeMachine, [pgm.slice(),]),
-                coroutine(intcodeMachine, [pgm.slice(),]),
-                coroutine(intcodeMachine, [pgm.slice(),]),
-                coroutine(intcodeMachine, [pgm.slice(),]),
+                aoc.coroutine(intcodeMachine, [pgm.slice(),]),
+                aoc.coroutine(intcodeMachine, [pgm.slice(),]),
+                aoc.coroutine(intcodeMachine, [pgm.slice(),]),
+                aoc.coroutine(intcodeMachine, [pgm.slice(),]),
+                aoc.coroutine(intcodeMachine, [pgm.slice(),]),
             ];
             // Prime all amplifiers with their phase settings
             for(let i=0; i<5; ++i) {
@@ -231,8 +218,11 @@ let aoc07 = function() {
             const allInts = reader.result.split(/,/u).map(elem => parseInt(elem));
 
             let result = callback(allInts);
-
-            document.querySelector(outElem).innerHTML = result;
+            if (result.actual === result.expected) {
+                document.querySelector(outElem).innerHTML = `${result.actual} (Correct!)`;
+            } else {
+                document.querySelector(outElem).innerHTML = `${result.actual} (ERROR: expected ${result.expected})`;
+            }
         };
         reader.onerror = (event) => {
             alert(event.target.error.name);
@@ -243,27 +233,33 @@ let aoc07 = function() {
     window.onload = function() {
         // part 1
         let pgm = [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0,];
-        testCase(getMaxThrusterSignal, [pgm,], 43210);
+        aoc.testCase(getMaxThrusterSignal, [pgm,], 43210);
         pgm = [3,23,3,24,1002,24,10,24,1002,23,-1,23, 101,5,23,23,1,24,23,23,4,23,99,0,0,];
-        testCase(getMaxThrusterSignal, [pgm,], 54321);
+        aoc.testCase(getMaxThrusterSignal, [pgm,], 54321);
         pgm = [3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0,];
-        testCase(getMaxThrusterSignal, [pgm,], 65210);
+        aoc.testCase(getMaxThrusterSignal, [pgm,], 65210);
         // part 2
         pgm = [3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5,];
-        testCase(getMaxThrusterSignalWithFeedback, [pgm,], 139629729);
+        aoc.testCase(getMaxThrusterSignalWithFeedback, [pgm,], 139629729);
         pgm = [3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,
                53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10,];
-        testCase(getMaxThrusterSignalWithFeedback, [pgm,], 18216);
+        aoc.testCase(getMaxThrusterSignalWithFeedback, [pgm,], 18216);
         document.querySelector("#testResults").innerHTML = "All tests passed!";
     };
     
     return {
         processFile: processFile,
         solvePart1: (pgm) => {
-            return getMaxThrusterSignal(pgm);
+            return {
+                actual: getMaxThrusterSignal(pgm),
+                expected: 21000,
+            };
         },
         solvePart2: (pgm) => {
-            return getMaxThrusterSignalWithFeedback(pgm);
+            return {
+                actual: getMaxThrusterSignalWithFeedback(pgm),
+                expected: 61379886,
+            };
         },
     };
 }();

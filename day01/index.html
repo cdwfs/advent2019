@@ -2,11 +2,17 @@
 <html lang="en">
   <head>
 	  <meta charset="utf-8"/>
-	  <title>AoC 2019: Day 01</title>
+	  <title>AoC 2019 Day 01: The Tyranny of the Rocket Equation</title>
 	  <link rel="stylesheet" href="../style.css">
+	  <script src="../common.js"></script>
 	  <script src="day01.js"></script>
   </head>
   <body>
+    <P><A HREF="https://adventofcode.com/2019/day/1">problem description</A><BR><A HREF="..">back to top</A></P>
+    
+    <H1>Tests</H1>
+    <DIV id="testResults"/>Tests not run (is JavaScript allowed to run? Check the console!)</DIV>
+    
     <H1>Part 1</H1>
     <P><input type="file" id="inputFile1" onchange='aoc01.processFile1("#inputFile1", "#fileResult1");'/></P>
     <P>Result: <span id="fileResult1"/></P>
@@ -14,5 +20,16 @@
     <H1>Part 2</H1>
     <P><input type="file" id="inputFile2" onchange='aoc01.processFile2("#inputFile2", "#fileResult2");'/></P>
     <P>Result: <span id="fileResult2"/></P>
+
+    <H1>TIL</H1>
+    <UL>
+      <LI>Basic project setup (Emacs web-mode, flycheck + jshint, ES6 improvements)</LI>
+      <LI>Minimal global namespace pollution by wrapping everything in a closure</LI>
+      <LI><code>console.assert()</code> -- less useful than it seems,
+        since it doesn't break execution. It's just a conditional log
+        message.</LI>
+      <LI>Local file processing with the HTML5 File API</LI>
+      <LI>Reading file contents with FileReader and Regex</LI>
+    </UL>
   </body>
 </html>

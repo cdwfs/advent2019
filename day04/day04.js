@@ -1,13 +1,6 @@
+/* global aoc */
 let aoc04 = function() {
     "use strict";
-
-    let testCase = function(func, input, expected, compareFunc) {
-        let actual = func(input);
-        if (!compareFunc(actual, expected)) {
-            document.querySelector("#testResults").innerHTML = `TEST FAILURE:<BR> ${func.name}(${input}) is ${actual}<BR>(expected ${expected})`;
-            throw {msg: "Unit test failure",};
-        }
-    };
 
     let isViablePasscode = function(passcode) {
         return false;
@@ -42,9 +35,9 @@ let aoc04 = function() {
 
     window.onload = function() {
         // Part 1 tests
-        testCase(isViablePasscode, 111111, true, (a,b) => (a === b));
-        testCase(isViablePasscode, 223450, false, (a,b) => (a === b));
-        testCase(isViablePasscode, 123789, false, (a,b) => (a === b));
+        aoc.testCase(isViablePasscode, 111111, true);
+        aoc.testCase(isViablePasscode, 223450, false);
+        aoc.testCase(isViablePasscode, 123789, false);
 
         document.querySelector("#testResults").innerHTML = "All tests passed!";
     };

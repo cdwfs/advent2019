@@ -1,14 +1,6 @@
+/* global aoc */
 let aoc06 = function() {
     "use strict";
-
-    let testCase = function(func, input, expected, compareFunc) {
-        let actual = func(input);
-        const compare = compareFunc || ((a,b) => (a === b));
-        if (!compare(actual, expected)) {
-            document.querySelector("#testResults").innerHTML = `TEST FAILURE:<BR> ${func.name}(${input}) is ${actual}<BR>(expected ${expected})`;
-            throw {msg: "Unit test failure",};
-        }
-    };
 
     const setDepth = function(orbitTree, bodyDepths, body, depth) {
         if (bodyDepths.hasOwnProperty(body)) {
@@ -82,8 +74,11 @@ let aoc06 = function() {
                 }
             });
             const result = callback(pairs);
-
-            document.querySelector(outElem).innerHTML = result;
+            if (result.actual === result.expected) {
+                document.querySelector(outElem).innerHTML = `${result.actual} (Correct!)`;
+            } else {
+                document.querySelector(outElem).innerHTML = `${result.actual} (ERROR: expected ${result.expected})`;
+            }
         };
         reader.onerror = (event) => {
             alert(event.target.error.name);
@@ -93,7 +88,7 @@ let aoc06 = function() {
 
     window.onload = function() {
         // Part 1 tests
-        testCase(countOrbits, [
+        let pairs = [
             {parent:"COM",child:"B",},
             {parent:"B",child:"C",},
             {parent:"C",child:"D",},
@@ -105,9 +100,10 @@ let aoc06 = function() {
             {parent:"E",child:"J",},
             {parent:"J",child:"K",},
             {parent:"K",child:"L",},
-        ], 42);
+        ];
+        aoc.testCase(countOrbits, [pairs,], 42);
         // Part 2 tests
-        testCase(shortestPathLength, [
+        pairs = [
             {parent:"COM",child:"B",},
             {parent:"B",child:"C",},
             {parent:"C",child:"D",},
@@ -121,7 +117,8 @@ let aoc06 = function() {
             {parent:"K",child:"L",},
             {parent:"K",child:"YOU",},
             {parent:"I",child:"SAN",},
-        ], 4);
+        ];
+        aoc.testCase(shortestPathLength, [pairs,], 4);
         
         document.querySelector("#testResults").innerHTML = "All tests passed!";
     };
@@ -129,11 +126,17 @@ let aoc06 = function() {
     return {
         processFile: processFile,
         solvePart1: (pairs) => {
-            return countOrbits(pairs);
+            return {
+                actual: countOrbits(pairs),
+                expected: 158090,
+            };
         },
         solvePart2: (pairs) => {
-            return shortestPathLength(pairs);
+            return {
+                actual: shortestPathLength(pairs),
+                expected: 241,
+            };
         },
     };
 }();
- 
+

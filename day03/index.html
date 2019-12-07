@@ -2,11 +2,14 @@
 <html lang="en">
   <head>
 	  <meta charset="utf-8"/>
-	  <title>AoC 2019: Day 03</title>
+	  <title>AoC 2019 Day 03: Crossed Wires</title>
 	  <link rel="stylesheet" href="../style.css">
+	  <script src="../common.js"></script>
 	  <script src="day03.js"></script>
   </head>
   <body>
+    <P><A HREF="https://adventofcode.com/2019/day/3">problem description</A><BR><A HREF="..">back to top</A></P>
+    
     <H1>Tests</H1>
     <DIV id="testResults"/>Tests not run (is JavaScript allowed to run? Check the console!)</DIV>
     
@@ -17,5 +20,13 @@
     <H1>Part 2</H1>
     <P><input type="file" id="inputFile2" onchange='aoc03.processFile("#inputFile2", aoc03.solvePart2, "#fileResult2");'/></P>
     <P>Result: <span id="fileResult2"/></P>
+
+    <H1>TIL</H1>
+    <UL>
+      <LI><code>Array.sort()</code> defaults to a lexical sort, which
+        makes sense in retrospect, means sorting an array of ints is
+        nonsense.</LI>
+      <LI><code>Array.forEach()</code> is useful</LI>
+    </UL>
   </body>
 </html>

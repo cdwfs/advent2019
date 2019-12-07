@@ -2,11 +2,14 @@
 <html lang="en">
   <head>
 	  <meta charset="utf-8"/>
-	  <title>AoC 2019: Day 07</title>
+	  <title>AoC 2019 Day 07: Amplification Circuit</title>
 	  <link rel="stylesheet" href="../style.css">
+	  <script src="../common.js"></script>
 	  <script src="day07.js"></script>
   </head>
   <body>
+    <P><A HREF="https://adventofcode.com/2019/day/7">problem description</A><BR><A HREF="..">back to top</A></P>
+    
     <H1>Tests</H1>
     <DIV id="testResults"/>Tests not run (is JavaScript allowed to run? Check the console!)</DIV>
     
@@ -17,5 +20,11 @@
     <H1>Part 2</H1>
     <P><input type="file" id="inputFile2" onchange='aoc07.processFile("#inputFile2", aoc07.solvePart2, "#fileResult2");'/></P>
     <P>Result: <span id="fileResult2"/></P>
+
+    <H1>TIL</H1>
+    <UL>
+      <LI>The spread syntax for arrays: if arr = [1,2,3], f(...arr) will call f(1,2,3).</LI>
+      <LI>Javascript coroutines (handy <A HREF="https://x.st/javascript-coroutines/">tutorial</A>)</LI>
+    </UL>
   </body>
 </html>

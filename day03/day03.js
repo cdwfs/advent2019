@@ -1,25 +1,8 @@
+/* globals aoc */
 let aoc03 = function() {
     "use strict";
 
-    let uniqueArray = function (ar) {
-        let j = {};
-        ar.forEach( function(v) {
-            j[v+ '::' + typeof v] = v;
-        });
-        return Object.keys(j).map(function(v){
-            return j[v];
-        });
-    };
-    
-    let testCase = function(func, input, expected, compareFunc) {
-        let actual = func(input);
-        if (!compareFunc(actual, expected)) {
-            document.querySelector("#testResults").innerHTML = `TEST FAILURE:<BR> ${func.name}(${input}) is ${actual}<BR>(expected ${expected})`;
-            throw {msg: "Unit test failure",};
-        }
-    };
-
-    let manDist = function(x1, y1, x2, y2) {
+    let manhattanDistance = function(x1, y1, x2, y2) {
         return Math.abs(x2-x1) + Math.abs(y2-y1);
     };
 
@@ -36,8 +19,8 @@ let aoc03 = function() {
                 endpointsUD.push(segment.yU);
             }
         });
-        endpointsLR = uniqueArray(endpointsLR);
-        endpointsUD = uniqueArray(endpointsUD);
+        endpointsLR = aoc.uniqueArray(endpointsLR);
+        endpointsUD = aoc.uniqueArray(endpointsUD);
         endpointsLR.sort( (a,b) => a-b ); // sort() with no arg defaults to lexical, even for numbers :(
         endpointsUD.sort( (a,b) => a-b );
         // Create arrays of ranges between each set of endpoints.
@@ -123,9 +106,7 @@ let aoc03 = function() {
         return {min: -Infinity, max: Infinity, values: null,};
     };
 
-    let findAllIntersections = function(circuits) {
-        let segments0 = circuits[0];
-        let segments1 = circuits[1];
+    let findAllIntersections = function(segments0, segments1) {
         //let ranges0 = getCircuitRanges(segments0);
         let ranges1 = getCircuitRanges(segments1);
 
@@ -155,13 +136,13 @@ let aoc03 = function() {
         return intersections;
     };
     
-    let findClosestIntersectionToOrigin = function(circuits) {
-        let intersections = findAllIntersections(circuits);
+    let findClosestIntersectionToOrigin = function(segments0, segments1) {
+        let intersections = findAllIntersections(segments0, segments1);
         
         // TODO: look up the functional way to do this
         let minDist = Infinity;
         intersections.forEach( (intersection) => {
-            let dist = manDist(0, 0, intersection.x, intersection.y);
+            let dist = manhattanDistance(0, 0, intersection.x, intersection.y);
             if (dist < minDist) {
                 minDist = dist;
             }
@@ -199,8 +180,8 @@ let aoc03 = function() {
         });
     };
     
-    let findShortestCombinedLengthToIntersection = function(circuits) {
-        let intersections = findAllIntersections(circuits);
+    let findShortestCombinedLengthToIntersection = function(segments0, segments1) {
+        let intersections = findAllIntersections(segments0, segments1);
         // Generate lookup tables for intersections by x and y coordinates
         let ix = [];
         let iy = [];
@@ -219,8 +200,8 @@ let aoc03 = function() {
         });
 
         // Compute lengths to all intersections along both circuits
-        computeLengthsToAllIntersections(circuits[0], 0, ix, iy);
-        computeLengthsToAllIntersections(circuits[1], 1, ix, iy);
+        computeLengthsToAllIntersections(segments0, 0, ix, iy);
+        computeLengthsToAllIntersections(segments1, 1, ix, iy);
 
         // Find the intersection with the shortest total distance
         let minDist = Infinity;
@@ -279,8 +260,11 @@ let aoc03 = function() {
             });
 
             let result = callback(circuits);
-
-            document.querySelector(outElem).innerHTML = result;
+            if (result.actual === result.expected) {
+                document.querySelector(outElem).innerHTML = `${result.actual} (Correct!)`;
+            } else {
+                document.querySelector(outElem).innerHTML = `${result.actual} (ERROR: expected ${result.expected})`;
+            }
         };
         reader.onerror = (event) => {
             alert(event.target.error.name);
@@ -288,57 +272,61 @@ let aoc03 = function() {
         reader.readAsText(firstFile);
     };
 
-    let intsAreEqual = (a,b) => (a === b);
-    
     window.onload = function() {
         // Part 1 tests
-        testCase(findClosestIntersectionToOrigin,
-                 [
-                     movesToSegments(["R8","U5","L5","D3",]),
-                     movesToSegments(["U7","R6","D4","L4",]),
-                 ],
-                 6, intsAreEqual);
-        testCase(findClosestIntersectionToOrigin,
-                 [
-                     movesToSegments(["R75","D30","R83","U83","L12","D49","R71","U7","L72",]),
-                     movesToSegments(["U62","R66","U55","R34","D71","R55","D58","R83",]),
-                 ],
-                 159, intsAreEqual);
-        testCase(findClosestIntersectionToOrigin,
-                 [
-                     movesToSegments(["R98","U47","R26","D63","R33","U87","L62","D20","R33","U53","R51",]),
-                     movesToSegments(["U98","R91","D20","R16","D67","R40","U7","R15","U6","R7",]),
-                 ],
-                 135, intsAreEqual);
+        aoc.testCase(findClosestIntersectionToOrigin,
+                     [
+                         movesToSegments(["R8","U5","L5","D3",]),
+                         movesToSegments(["U7","R6","D4","L4",]),
+                     ],
+                     6);
+        aoc.testCase(findClosestIntersectionToOrigin,
+                     [
+                         movesToSegments(["R75","D30","R83","U83","L12","D49","R71","U7","L72",]),
+                         movesToSegments(["U62","R66","U55","R34","D71","R55","D58","R83",]),
+                     ],
+                     159);
+        aoc.testCase(findClosestIntersectionToOrigin,
+                     [
+                         movesToSegments(["R98","U47","R26","D63","R33","U87","L62","D20","R33","U53","R51",]),
+                         movesToSegments(["U98","R91","D20","R16","D67","R40","U7","R15","U6","R7",]),
+                     ],
+                     135);
         // Part 2 tests
-        testCase(findShortestCombinedLengthToIntersection,
-                 [
-                     movesToSegments(["R8","U5","L5","D3",]),
-                     movesToSegments(["U7","R6","D4","L4",]),
-                 ],
-                 30, intsAreEqual);
-        testCase(findShortestCombinedLengthToIntersection,
-                 [
-                     movesToSegments(["R75","D30","R83","U83","L12","D49","R71","U7","L72",]),
-                     movesToSegments(["U62","R66","U55","R34","D71","R55","D58","R83",]),
-                 ],
-                 610, intsAreEqual);
-        testCase(findShortestCombinedLengthToIntersection,
-                 [
-                     movesToSegments(["R98","U47","R26","D63","R33","U87","L62","D20","R33","U53","R51",]),
-                     movesToSegments(["U98","R91","D20","R16","D67","R40","U7","R15","U6","R7",]),
-                 ],
-                 410, intsAreEqual);
+        aoc.testCase(findShortestCombinedLengthToIntersection,
+                     [
+                         movesToSegments(["R8","U5","L5","D3",]),
+                         movesToSegments(["U7","R6","D4","L4",]),
+                     ],
+                     30);
+        aoc.testCase(findShortestCombinedLengthToIntersection,
+                     [
+                         movesToSegments(["R75","D30","R83","U83","L12","D49","R71","U7","L72",]),
+                         movesToSegments(["U62","R66","U55","R34","D71","R55","D58","R83",]),
+                     ],
+                     610);
+        aoc.testCase(findShortestCombinedLengthToIntersection,
+                     [
+                         movesToSegments(["R98","U47","R26","D63","R33","U87","L62","D20","R33","U53","R51",]),
+                         movesToSegments(["U98","R91","D20","R16","D67","R40","U7","R15","U6","R7",]),
+                     ],
+                     410);
         document.querySelector("#testResults").innerHTML = "All tests passed!";
     };
     
     return {
         processFile: processFile,
         solvePart1: (circuits) => {
-            return findClosestIntersectionToOrigin(circuits);
+            return {
+                actual: findClosestIntersectionToOrigin(circuits[0], circuits[1]),
+                expected: 2180,
+            };
         },
         solvePart2: (circuits) => {
-            return findShortestCombinedLengthToIntersection(circuits);
+            return {
+                actual: findShortestCombinedLengthToIntersection(circuits[0], circuits[1]),
+                expected: 112316,
+            };
         },
     };
 }();
