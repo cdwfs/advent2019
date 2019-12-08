@@ -16,7 +16,7 @@ main {
 }
 section {
 	background-color: #C0C0C0;
-	float: left
+	float: left;
 	padding: 35px 0;
 	position: relative;
 	width: 70%;
@@ -46,7 +46,7 @@ aside {
 mark {
 	background-color: blue;
 	color: yellow;
-	}
+}
 footer {
 	background-color: #FFFFC0;
 	font-size: 0.8em;
