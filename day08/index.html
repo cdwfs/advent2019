@@ -20,9 +20,16 @@
     <H1>Part 2</H1>
     <P><input type="file" id="inputFile2" onchange='aoc08.processFile("#inputFile2", aoc08.solvePart2, "#fileResult2");'/></P>
     <P>Result: <span id="fileResult2"/></P>
+    <canvas id="myCanvas" width="25" height="6" style="border:2px solid #000000;"></canvas>
+    <canvas id="myCanvas2" width="200" height="48" style="border:2px solid #000000;"></canvas>
 
     <H1>TIL</H1>
     <UL>
+      <LI>Array <-> string inter-conversion with .join() and .split()</LI>
+      <LI>Basic HTML5 canvas usage for debug rendering. Should be a
+        useful tool in future weeks.</LI>
+      <LI>No nearest-neighbor filtering for upscaling with <code>ctx.drawImage()</code>? Lame!
+        (<A HREF="https://stackoverflow.com/questions/18761404/how-to-scale-images-on-a-html5-canvas-with-better-interpolation#">stackoverflow</A>)</LI>
     </UL>
   </body>
 </html>

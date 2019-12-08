@@ -25,6 +25,10 @@ let aoc08 = function() {
             layers.push(imgString.slice(i*layerSize, (i+1)*layerSize));
         }
         let output = [];
+        let canvas = document.querySelector("#myCanvas");
+        let ctx = canvas.getContext('2d');
+        let imageData = ctx.getImageData(0, 0, imgWidth, imgHeight);
+        let pixels = imageData.data;
         for(let y=0; y<imgHeight; ++y) {
             for(let x=0; x<imgWidth; ++x) {
                 let i = y*imgWidth + x;
@@ -33,10 +37,18 @@ let aoc08 = function() {
                     const layer = layers[z];
                     if (layer[i] === "0") {
                         output.push("0");
+                        pixels[i*4+0] = 0;
+                        pixels[i*4+1] = 0;
+                        pixels[i*4+2] = 0;
+                        pixels[i*4+3] = 255;
                         found = true;
                         break;
                     } else if (layer[i] === "1") {
                         output.push("1");
+                        pixels[i*4+0] = 255;
+                        pixels[i*4+1] = 255;
+                        pixels[i*4+2] = 255;
+                        pixels[i*4+3] = 255;
                         found = true;
                         break;
                     } else if (layer[i] === "2") {
@@ -50,6 +62,10 @@ let aoc08 = function() {
                 }
             }
         }
+        ctx.putImageData(imageData, 0, 0);
+        let canvas2 = document.querySelector("#myCanvas2");
+        let ctx2 = canvas2.getContext('2d');
+        ctx2.drawImage(canvas, 0, 0, imgWidth*8, imgHeight*8);
         return output.join("");
     };
     
@@ -92,7 +108,7 @@ let aoc08 = function() {
         solvePart2: (imgString) => {
             return {
                 actual: renderImage(imgString, 25, 6),
-                expected: 0,
+                expected: "100011111010010111101111010001100001001010000100000101011100111101110011100001001000010010100001000000100100001001010000100000010011110100101111010000",
             };
         },
     };
