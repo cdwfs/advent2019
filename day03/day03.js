@@ -2,10 +2,6 @@
 let aoc03 = function() {
     "use strict";
 
-    let manhattanDistance = function(x1, y1, x2, y2) {
-        return Math.abs(x2-x1) + Math.abs(y2-y1);
-    };
-
     let getCircuitRanges = function(circuit) {
         // extract and sort unique endpoints, sorted by L/R and U/D segments
         let endpointsLR = [];
@@ -142,7 +138,7 @@ let aoc03 = function() {
         // TODO: look up the functional way to do this
         let minDist = Infinity;
         intersections.forEach( (intersection) => {
-            let dist = manhattanDistance(0, 0, intersection.x, intersection.y);
+            let dist = aoc.manhattanDistance(0, 0, intersection.x, intersection.y);
             if (dist < minDist) {
                 minDist = dist;
             }

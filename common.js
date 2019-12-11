@@ -10,6 +10,10 @@ let aoc = function() {
             }
         },
 
+        manhattanDistance: function(x1, y1, x2, y2) {
+            return Math.abs(x2-x1) + Math.abs(y2-y1);
+        },
+
         // Compares two arrays by value for equality
         compareArrays: function(arr1, arr2) {
             return arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);
