@@ -26,9 +26,12 @@ let aoc08 = function() {
         }
         let output = [];
         let canvas = document.querySelector("#myCanvas");
+        canvas.width = imgWidth * 8;
+        canvas.height = imgHeight * 8;
         let ctx = canvas.getContext('2d');
-        let imageData = ctx.getImageData(0, 0, imgWidth, imgHeight);
-        let pixels = imageData.data;
+        ctx.scale(8,8);
+        ctx.fillStyle = "rgba(0,0,0,0)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         for(let y=0; y<imgHeight; ++y) {
             for(let x=0; x<imgWidth; ++x) {
                 let i = y*imgWidth + x;
@@ -37,18 +40,14 @@ let aoc08 = function() {
                     const layer = layers[z];
                     if (layer[i] === "0") {
                         output.push("0");
-                        pixels[i*4+0] = 0;
-                        pixels[i*4+1] = 0;
-                        pixels[i*4+2] = 0;
-                        pixels[i*4+3] = 255;
+                        ctx.fillStyle = "black";
+                        ctx.fillRect(x,y,1,1);
                         found = true;
                         break;
                     } else if (layer[i] === "1") {
                         output.push("1");
-                        pixels[i*4+0] = 255;
-                        pixels[i*4+1] = 255;
-                        pixels[i*4+2] = 255;
-                        pixels[i*4+3] = 255;
+                        ctx.fillStyle = "white";
+                        ctx.fillRect(x,y,1,1);
                         found = true;
                         break;
                     } else if (layer[i] === "2") {
@@ -62,10 +61,6 @@ let aoc08 = function() {
                 }
             }
         }
-        ctx.putImageData(imageData, 0, 0);
-        let canvas2 = document.querySelector("#myCanvas2");
-        let ctx2 = canvas2.getContext('2d');
-        ctx2.drawImage(canvas, 0, 0, imgWidth*8, imgHeight*8);
         return output.join("");
     };
     
