@@ -2,28 +2,6 @@
 let aoc11 = function() {
     "use strict";
 
-    let canvasStuff = function(imgWidth, imgHeight) {
-        let canvas = document.querySelector("#myCanvas");
-        let ctx = canvas.getContext('2d');
-        let imageData = ctx.getImageData(0, 0, imgWidth, imgHeight);
-        let pixels = imageData.data; // byte array -- four bytes per pixel
-        // draw stuff here
-        for(let y=0; y<imgHeight; ++y) {
-            for(let x=0; x<imgWidth; ++x) {
-                let i = y*imgWidth+x;
-                pixels[4*i+0] = 0; // r
-                pixels[4*i+1] = 0; // g
-                pixels[4*i+2] = 0; // b
-                pixels[4*i+3] = 0; // a
-            }
-        }
-        ctx.putImageData(imageData, 0, 0);
-        // scale up to larger canvas
-        let canvas2 = document.querySelector("#myCanvas2");
-        let ctx2 = canvas2.getContext('2d');
-        ctx2.drawImage(canvas, 0, 0, imgWidth*8, imgHeight*8);        
-    };
-
     // Note: this function may modify pgm in-place! Use a copy if the caller needs to reuse pgm elsewhere.
     let intcodeMachine = function*(pgm) {
         let inputs = yield []; // dummy yield to retrieve initial inputs
@@ -180,28 +158,105 @@ let aoc11 = function() {
         return result.value;
     };
 
-    const countPaintedSquares = function(pgm) {
-        // create a "sufficiently large" sparse 2D canvas. Cells without data are implicitly black. Reading should *not* fill in that cell.
-        // initialize robot to location 0,0.
-        // while (!halted):
-        //   feed robot current cell color as input (0=black, 1=white)
-        //   output is two elements (color, dir)
-        //   paint current cell based on output color (0=black, 1=white). (When creating a new cell, update the painted cells count)
-        //   turn 90 degrees left or right depending on dir (0=left, 1=right)
-        //   move one space forward
-        // return the painted cells count (or count the number of elements in the canvas)
-        let simRobot = intcodeMachine(pgm);
+    const makeRobotCanvas = function() {
+        let grid = {};
+        let paintedCount = 0;
+        let bounds = [0,0,0,0,]; // minX, minY, maxX, maxY
+        return {
+            get: function(x,y) {
+                if (!grid.hasOwnProperty(y)) {
+                    return 0;
+                } else if (!grid[y].hasOwnProperty(x)) {
+                    return 0;
+                } else {
+                    return grid[y][x];
+                }
+            },
+            set: function(x,y,color) {
+                if (!grid.hasOwnProperty(y)) {
+                    grid[y] = {};
+                }
+                if (!grid[y].hasOwnProperty(x)) {
+                    paintedCount += 1;
+                }
+                grid[y][x] = color;
+                bounds[0] = Math.min(bounds[0], x);
+                bounds[1] = Math.min(bounds[1], y);
+                bounds[2] = Math.max(bounds[2], x);
+                bounds[3] = Math.max(bounds[3], y);
+            },
+            getPaintedCount: function() {
+                return paintedCount;
+            },
+            getBounds: function() {
+                return bounds.slice();
+            },
+            getGrid: function() {
+                return grid;
+            },
+        };
+    };
+
+    const runRobotProgram = function(robot, canvas) {
+        let robotPos = [0,0,];
+        let robotDir = 0;
+        const offsets = [
+            [0,1,], // 0 = up
+            [1,0,], // 1 = right
+            [0,-1,], // 2 = down
+            [-1,0,], // 3 = left
+        ];
         while(true) {
-            const currentCellColor = 0; // TODO: read from canvas
-            const result = simRobot([currentCellColor,]);
+            const currentCellColor = canvas.get(robotPos[0], robotPos[1]);
+            const result = robot([currentCellColor,]);
             const newCellColor = result.value[0];
             const turnDir = result.value[1];
-            // TODO: process output
+            canvas.set(robotPos[0], robotPos[1], newCellColor);
+            robotDir = turnDir ? ((robotDir+1)%4) : ((robotDir+3)%4);
+            robotPos[0] += offsets[robotDir][0];
+            robotPos[1] += offsets[robotDir][1];
             if (result.done) {
                 break;
             }
         }
-        return 17;
+    };
+    
+    const countPaintedSquares = function(pgm) {
+        let simRobot = aoc.coroutine(intcodeMachine, [pgm,]);
+        let robotCanvas = makeRobotCanvas();
+        runRobotProgram(simRobot, robotCanvas);
+        return robotCanvas.getPaintedCount();
+    };
+
+    const paintImage = function(pgm) {
+        let simRobot = aoc.coroutine(intcodeMachine, [pgm,]);
+        let robotCanvas = makeRobotCanvas();
+        robotCanvas.set(0,0,1);
+        runRobotProgram(simRobot, robotCanvas);
+        const canvasBounds = robotCanvas.getBounds();
+        const imgWidth = 1 + canvasBounds[2] - canvasBounds[0];
+        const imgHeight = 1 + canvasBounds[3] - canvasBounds[1];
+        const grid = robotCanvas.getGrid();
+        
+        let canvas = document.querySelector("#myCanvas");
+        canvas.width = imgWidth * 4;
+        canvas.height = imgHeight * 4;
+        let ctx = canvas.getContext('2d');
+        ctx.translate(0, canvas.height);
+        // TODO: should be some additional translation I could apply here to avoid the need to offset pixels in the loop,
+        // but I'm unclear on order of operations and can't be bothered.
+        ctx.scale(4, -4);        
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white";
+        for(const [y,row] of Object.entries(grid)) {
+            for(const [x,color] of Object.entries(row)) {
+                if (color === 1) {
+                    ctx.fillRect(parseInt(x)-canvasBounds[0], parseInt(y)-canvasBounds[1], 1, 1);
+                }
+            }
+        }
+        return robotCanvas.getPaintedCount();
     };
     
     let processFile = function(inElem, callback, outElem) {
@@ -237,13 +292,13 @@ let aoc11 = function() {
         solvePart1: (pgm) => {
             return {
                 actual: countPaintedSquares(pgm),
-                expected: 6,
+                expected: 2252,
             };
         },
         solvePart2: (pgm) => {
             return {
-                actual: processIntcodeProgram(pgm, [2,])[0],
-                expected: 73144,
+                actual: paintImage(pgm),
+                expected: 249,
             };
         },
     };

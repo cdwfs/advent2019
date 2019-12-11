@@ -20,11 +20,17 @@
     <H1>Part 2</H1>
     <P><input type="file" id="inputFile2" onchange='aoc11.processFile("#inputFile2", aoc11.solvePart2, "#fileResult2");'/></P>
     <P>Result: <span id="fileResult2"/></P>
-    <canvas id="myCanvas" width="25" height="6" style="border:2px solid #000000;"></canvas>
-    <canvas id="myCanvas2" width="200" height="48" style="border:2px solid #000000;"></canvas>
+    <canvas id="myCanvas" width="1" height="1" style="border:2px solid #000000;"></canvas>
 
     <H1>TIL</H1>
     <UL>
+      <LI>Array.forEach() callback takes up to three parameters: (elem
+        [, index [, array]]). So you can get the i of an element while
+        iterating over the array (and the array itself, in case you want
+        to access neighboring elements).</LI>
+      <LI><code>for(let [k,v] of Object.entries(obj))</code> and <code>for(let
+        k of Object.keys(obj))</code>.</LI>
+      <LI>canvas.width and canvas.height to change canvas dimensions at runtime</LI>
     </UL>
   </body>
 </html>
