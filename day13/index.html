@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	  <meta charset="utf-8"/>
+	  <title>AoC 2019 Day 13: Care Package</title>
+	  <link rel="stylesheet" href="../style.css">
+	  <script src="../common.js"></script>
+	  <script src="day13.js"></script>
+  </head>
+  <body>
+    <P><A HREF="https://adventofcode.com/2019/day/13">problem description</A><BR><A HREF="..">back to top</A></P>
+    
+    <H1>Tests</H1>
+    <DIV id="testResults"/>Tests not run (is JavaScript allowed to run? Check the console!)</DIV>
+    
+    <H1>Part 1</H1>
+    <P><input type="file" id="inputFile1" onchange='aoc13.processFile("#inputFile1", aoc13.solvePart1, "#fileResult1");'/></P>
+    <P>Result: <span id="fileResult1"/></P>
+
+    <H1>Part 2</H1>
+    <P><input type="file" id="inputFile2" onchange='aoc13.processFile("#inputFile2", aoc13.solvePart2, "#fileResult2");'/></P>
+    <P>Result: <span id="fileResult2"/></P>
+    <canvas id="myCanvas" width="1" height="1" style="border:2px solid #000000;"></canvas>
+
+    <H1>TIL</H1>
+    <UL>
+      <LI>Nothing really. It would be educational to build out the
+        game into something actually interactive (actual score display,
+        tick the sim every 30/60Hz, buttons to move left and right) but
+        would probably be too difficult/tedious for a human to actually
+        finish.</LI>
+    </UL>
+  </body>
+</html>
