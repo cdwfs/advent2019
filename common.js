@@ -38,5 +38,24 @@ let aoc = function() {
             o.next(); // execute until first yield
             return x => o.next(x);
         },
+
+        gcd: function(...args) {
+            const gcd2 = function(a,b) {
+                a = Math.abs(a);
+                b = Math.abs(b);
+                while(b > 0) {
+                    const t = b;
+                    b = a % b;
+                    a = t;
+                }
+                return a;
+            };
+            return args.reduce( (result, n) => gcd2(result, n) );
+        },
+        
+        lcm: function(...args) {
+            const lcm2 = (a,b) => Math.abs(a*b) / aoc.gcd(a,b);
+            return args.reduce( (result, n) => lcm2(result, n) );
+        },
     };
 }();
