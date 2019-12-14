@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	  <meta charset="utf-8"/>
+	  <title>AoC 2019 Day 14: Space Stoichiometry</title>
+	  <link rel="stylesheet" href="../style.css">
+	  <script src="../common.js"></script>
+	  <script src="day14.js"></script>
+  </head>
+  <body>
+    <P><A HREF="https://adventofcode.com/2019/day/14">problem description</A><BR><A HREF="..">back to top</A></P>
+    
+    <H1>Tests</H1>
+    <DIV id="testResults"/>Tests not run (is JavaScript allowed to run? Check the console!)</DIV>
+    
+    <H1>Part 1</H1>
+    <P><input type="file" id="inputFile1" onchange='aoc14.processFile("#inputFile1", aoc14.solvePart1, "#fileResult1");'/></P>
+    <P>Result: <span id="fileResult1"/></P>
+
+    <H1>Part 2</H1>
+    <P><input type="file" id="inputFile2" onchange='aoc14.processFile("#inputFile2", aoc14.solvePart2, "#fileResult2");'/></P>
+    <P>Result: <span id="fileResult2"/></P>
+
+    <H1>TIL</H1>
+    <UL>
+      <LI>I haven't quite mastered REs in JS yet. I should be able to
+        parse a line's reaction in a single RE, but instead it's a bunch
+        of splits and individual REs.</LI>
+    </UL>
+  </body>
+</html>
