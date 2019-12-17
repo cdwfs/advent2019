@@ -149,7 +149,7 @@ let aoc17 = function() {
         return outputs;
     }
     
-    // Helper function if all inputs are known up front
+    // Helper function if all inputs are known up front.
     function processIntcodeProgram(pgm, inputs) {
         let machine = aoc.coroutine(intcodeMachine, [pgm,]);
         const result = machine(inputs);
@@ -244,11 +244,36 @@ let aoc17 = function() {
     }
     
     function generateAndCalibrate(pgm, canvas) {
-        const output = processIntcodeProgram(pgm, []);
+        const output = processIntcodeProgram(pgm.slice(), []);
         const mapText = String.fromCharCode(...output);
         return computeIntersectionAlignments(mapText, canvas);
     }
     
+    function howMuchDust(pgm, canvas) {
+        // "A,B\n" -> [65, 44, 66, 44, 10,]
+        function commandsToInputs(str) {
+            return str.split("").map(c => c.charCodeAt(0));
+        }
+        
+        let localPgm = pgm.slice();
+        console.assert(localPgm[0] === 1, "Expected pgm[0] to be 1!");
+        localPgm[0] = 2;
+        const mainRoutine = commandsToInputs("A,A,C,B,A,B,C,B,A,C\n");
+        const moveA = commandsToInputs("L,4,L,10,L,6\n");
+        const moveB = commandsToInputs("L,6,R,8,L,10,L,8,L,8\n");
+        const moveC = commandsToInputs("L,6,L,4,R,8,R,8\n");
+        const liveVideo = commandsToInputs("n\n");
+        const inputs = mainRoutine
+              .concat(moveA)
+              .concat(moveB)
+              .concat(moveC)
+              .concat(liveVideo)
+        ;
+        let output = processIntcodeProgram(localPgm, inputs);
+        const mapText = String.fromCharCode(...output);
+        //console.log(mapText);
+        return output.pop();
+    }
     
     window.onload = function() {
         // part 1
@@ -260,6 +285,23 @@ let aoc17 = function() {
 ..#...#...#..
 ..#####...^..`;
         aoc.testCase(computeIntersectionAlignments, [mapText,], 76);
+        // part 2
+        mapText = `#######...#####
+#.....#...#...#
+#.....#...#...#
+......#...#...#
+......#...###.#
+......#.....#.#
+^########...#.#
+......#.#...#.#
+......#########
+........#...#..
+....#########..
+....#...#......
+....#...#......
+....#...#......
+....#####......`;
+        
         document.querySelector("#testResults").innerHTML = "All tests passed!";
     };
     
@@ -273,8 +315,8 @@ let aoc17 = function() {
         },
         solvePart2: (pgm) => {
             return {
-                actual: calibrateIntersectionAlignments(pgm, document.querySelector("#myCanvas2")),
-                expected: 368,
+                actual: howMuchDust(pgm, document.querySelector("#myCanvas2")),
+                expected: 779133,
             };
         },
     };
