@@ -204,46 +204,61 @@ let aoc19 = function() {
         return count;
     }
 
+    function findUpperPoint(pgm, slope, y) {
+        // Find the right edge of the beam at this height
+        let x = Math.floor((y / slope[1]) * slope[0]);
+        const ur = processIntcodeProgram(pgm.slice(), [x,y,])[0];
+        if (ur) {
+            // test point is inside the beam; move right until the right neighbor is outside.
+            while(processIntcodeProgram(pgm.slice(), [x+1,y,])[0]) {
+                x += 1;
+            }
+        } else {
+            // Test point is outside the beam; move left until test point is inside.
+            do {
+                x -= 1;
+            } while(!processIntcodeProgram(pgm.slice(), [x,y,])[0]);
+        }                
+        // tx,ty is now the rightmost point inside the beam at height Y.
+        return [x, y,];
+    }
+    
+    function boxFitsAtXY(pgm, slope, x, y, bw, bh) {
+        let [blx,bly] = [x-(bw-1), y+(bh-1),];
+        return processIntcodeProgram(pgm.slice(), [blx,bly,])[0];
+    }
+    
     function getClosestBoxFit(pgm, bw, bh) {
         let slope = [354, 400,];
-        let miny = 10;
-        let maxy = 200;
+        let miny = 200; // lower bound where a smaller box does NOT fit.
+        let maxvy = 1000000; // upper bound where a smaller box fits but the big one doesn't.
+        let maxy = 1000000; // upper bound where the full box fits.
         while(true) {
-            let ty = Math.floor( (miny+maxy)/2 );
-            // Find the right edge of the beam at this height
-            let tx = Math.floor((ty / slope[1]) * slope[0]);
-            const ur = processIntcodeProgram(pgm.slice(), [tx,ty,])[0];
-            if (ur) {
-                // test point is inside the beam; move right until the right neighbor is outside.
-                while(processIntcodeProgram(pgm.slice(), [tx+1,ty,])[0]) {
-                    tx += 1;
-                }
-            } else {
-                // Test point is outside the beam; move left until test point is inside.
-                do {
-                    tx -= 1;
-                } while(!processIntcodeProgram(pgm.slice(), [tx,ty,])[0]);
-            }                
-            // tx,ty is now the rightmost point inside the beam at height Y.
-            slope = [tx, ty,]; // update slope estimate.
-            
-            // maxy tracks the smallest Y we've tested where a bw*bh box definitely fits.
-            // miny tracks the largest Y we've tested where a bw*bh box does NOT fit, but a (bw-1)*(bh-1) box DOES.
-            let [blx,bly] = [tx-(bw-1), ty+(bh-1),]
-            const bl = processIntcodeProgram(pgm.slice(), [blx,bly,])[0];
-            if (bl) {
-                // box is inside the beam. Adjust upper bound.
+            let [tx, ty,] = findUpperPoint(pgm, slope, Math.floor( (miny+maxy)/2 ));
+            slope = [tx, ty,]; // update slope estimate
+            if (boxFitsAtXY(pgm, slope, tx, ty, bw, bh)) {
+                // box is inside the beam. Adjust upper bounds.
                 maxy = ty;
-            } else {
-                // box is outside the beam. Adjust lower bound.
-                miny = ty+1;
-            }
-            if (miny === maxy) {
+                maxvy = ty;
+            } else if (boxFitsAtXY(pgm, slope, tx, ty, bw-1, bh-1)) {
+                maxvy = ty;
                 break;
+            } else {
+                // small box doesn't fit either. adjust lower bound.
+                miny = ty + 1;
             }
         }
-        const closestPoint = [Math.floor((miny / slope[1]) * slope[0]), miny,];
-        return closestPoint[0]*10000 + closestPoint[1];
+
+        // start at maxvy and march up to maxy, find the first place where the large box fits.
+        for(let y=maxvy; y<maxy; ++y) {
+            let [tx,ty] = findUpperPoint(pgm, slope, y);
+            if (boxFitsAtXY(pgm, slope, tx, ty, bw, bh)) {
+                const closestPoint = [tx-(bw-1), ty,];
+                return closestPoint[0]*10000 + closestPoint[1];
+            }
+        }
+        
+        throw `Nothing, really?`;
     }
     
     window.onload = function() {
@@ -262,8 +277,8 @@ let aoc19 = function() {
         },
         solvePart2: (pgm) => {
             return {
-                actual: getClosestBoxFit(pgm, 8, 8),
-                expected: 18902145,
+                actual: getClosestBoxFit(pgm, 100, 100),
+                expected: 17302065,
             };
         },
     };
