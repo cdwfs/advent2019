@@ -28,6 +28,19 @@ let aoc18 = function() {
     }
 
     window.onload = function() {
+        // priority queue tests
+        let pq = aoc.createPriorityQueue((a,b) => a > b);
+        aoc.testCase(pq.size, [], 0);
+        aoc.testCase(pq.empty, [], true);
+        pq.push(1,4,2,0,5,3);
+        aoc.testCase(pq.size, [], 6);
+        aoc.testCase(pq.empty, [], false);
+        for(let i=5; i>=0; --i) {
+            aoc.testCase(pq.peek, [], i);
+            aoc.testCase(pq.pop, [], i);
+            aoc.testCase(pq.size, [], i);
+        }
+        aoc.testCase(pq.empty, [], true);
         // part 1
         // part 2
         document.querySelector("#testResults").innerHTML = "All tests passed!";

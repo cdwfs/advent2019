@@ -57,5 +57,71 @@ let aoc = function() {
             const lcm2 = (a,b) => Math.abs(a*b) / aoc.gcd(a,b);
             return args.reduce( (result, n) => lcm2(result, n) );
         },
+
+        // isHigherFunc(a,b) returns true if A is higher priority than B.
+        createPriorityQueue: function(isHigherFunc) {
+            const baseIndex = 1;
+            let isHigher = isHigherFunc;
+            let elems = [null,];
+            let size = () => elems.length - baseIndex;
+            let isEmpty = () => size() <= 0;
+            let parent = (i) => Math.floor(i/2);
+            let heapify = function(i) {
+                // Assumes i has already been biased by baseIndex.
+                let val = elems[i];
+                while (i <= parent(size())) {
+                    // Compare to highest-priority child
+                    let child = 2*i;
+                    if (child < size() && isHigher(elems[child+1], elems[child])) {
+                        ++child;
+                    }
+                    if (isHigher(val, child)) {
+                        break;
+                    }
+                    elems[i] = elems[child];
+                    i = child;
+                }
+                elems[i] = val;
+            };
+            let push = function(...es) {
+                for(let e of es) {
+                    let i = elems.length;
+                    while (i > baseIndex) {
+                        const p = parent(i);
+                        if (isHigher(elems[p], e)) {
+                            break;
+                        }
+                        elems[i] = elems[p];
+                        i = p;
+                    }
+                    elems[i] = e;
+                }
+            };
+            let peek = function() {
+                if (isEmpty()) {
+                    throw "Can't peek an empty heap!";
+                }
+                return elems[baseIndex];
+            };
+            let pop = function() {
+                if (isEmpty()) {
+                    throw "Can't pop an empty heap!";
+                }
+                let top = elems[baseIndex];
+                let back = elems.pop();
+                if (!isEmpty()) {
+                    elems[baseIndex] = back;
+                    heapify(baseIndex);
+                }
+                return top;
+            };
+            return {
+                size: size,
+                empty: isEmpty,
+                push: push,
+                peek: peek,
+                pop: pop,
+            };
+        },
     };
 }();
