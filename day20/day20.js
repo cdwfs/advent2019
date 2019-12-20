@@ -20,33 +20,34 @@ let aoc20 = function() {
                     const s = allLines[y+1][x];
                     const w = allLines[y][x-1];
                     const e = allLines[y][x+1];
+                    const dz = (mx === 0 || mx === mapWidth-1 || my === 0 || my === mapHeight-1) ? 1 : -1;
                     if ("A" <= n && n <= "Z") {
                         const portal = allLines[y-2][x] + n;
                         if (!portalEnds.hasOwnProperty(portal)) {
                             portalEnds[portal] = [];
                         }
-                        portalEnds[portal].push([mx,my,]);
+                        portalEnds[portal].push([mx,my,dz,]);
                     }
                     if ("A" <= s && s <= "Z") {
                         const portal = s + allLines[y+2][x];
                         if (!portalEnds.hasOwnProperty(portal)) {
                             portalEnds[portal] = [];
                         }
-                        portalEnds[portal].push([mx,my,]);
+                        portalEnds[portal].push([mx,my,dz,]);
                     }
                     if ("A" <= w && w <= "Z") {
                         const portal = allLines[y][x-2] + w;
                         if (!portalEnds.hasOwnProperty(portal)) {
                             portalEnds[portal] = [];
                         }
-                        portalEnds[portal].push([mx,my,]);
+                        portalEnds[portal].push([mx,my,dz,]);
                     }
                     if ("A" <= e && e <= "Z") {
                         const portal = e + allLines[y][x+2];
                         if (!portalEnds.hasOwnProperty(portal)) {
                             portalEnds[portal] = [];
                         }
-                        portalEnds[portal].push([mx,my,]);
+                        portalEnds[portal].push([mx,my,dz,]);
                     }
                 }
             }
@@ -69,10 +70,10 @@ let aoc20 = function() {
                 end = [ ends[0][0], ends[0][1], ];
             } else {
                 console.assert(ends.length === 2, `found ${ends.length} endpoints for portal ${p} (expected 2)`);
-                const [x0,y0] = ends[0];
-                const [x1,y1] = ends[1];
-                portals[y0][x0] = [x1,y1,];
-                portals[y1][x1] = [x0,y0,];
+                const [x0,y0,dz0] = ends[0];
+                const [x1,y1,dz1] = ends[1];
+                portals[y0][x0] = [x1,y1,dz1,p,];
+                portals[y1][x1] = [x0,y0,dz0,p,];
             }
         }
         return {
@@ -116,9 +117,11 @@ let aoc20 = function() {
                 continue;
             }
             seen[px+"."+py] = true;
+            
             if (px === map.end[0] && py === map.end[1]) {
                 return steps;
             }
+            
             if (py > 0 && map.grid[py-1][px] === '.') {
                 toVisit.push([px,py-1,steps+1,]);
             }
@@ -131,7 +134,7 @@ let aoc20 = function() {
             if (px < map.width-1 && map.grid[py][px+1] === '.') {
                 toVisit.push([px+1,py,steps+1,]);
             }
-            // check for portals!
+
             const pd = map.portals[py][px];
             if (pd) {
                 toVisit.push([pd[0], pd[1], steps+1,]);
@@ -140,8 +143,48 @@ let aoc20 = function() {
         throw `nowhere left to visit & haven't found exit yet?`;
     }
     
+    function shortestRecursiveSolutionLength(map) {
+        let seen = {};
+        let toVisit = [
+            [map.start[0], map.start[1], 0, 0,],
+        ];
+        while(toVisit.length > 0) {
+            const [px,py,pz,steps] = toVisit.shift();
+            if (seen[px+"."+py+"."+pz]) {
+                continue;
+            }
+            seen[px+"."+py+"."+pz] = true;
+
+            if (px === map.end[0] && py === map.end[1] && pz === 0) {
+                return steps;
+            }
+            
+            if (py > 0 && map.grid[py-1][px] === '.') {
+                toVisit.push([px,py-1,pz,steps+1,]);
+            }
+            if (py < map.height-1 && map.grid[py+1][px] === '.') {
+                toVisit.push([px,py+1,pz,steps+1,]);
+            }
+            if (px > 0 && map.grid[py][px-1] === '.') {
+                toVisit.push([px-1,py,pz,steps+1,]);
+            }
+            if (px < map.width-1 && map.grid[py][px+1] === '.') {
+                toVisit.push([px+1,py,pz,steps+1,]);
+            }
+
+            const pd = map.portals[py][px];
+            if (pd) {
+                if (pz === 0 && pd[2] === -1) {
+                    // ignore outer portals at the outermost level
+                } else {
+                    toVisit.push([pd[0], pd[1], pz + pd[2], steps+1,]);
+                }
+            }
+        }
+        throw `nowhere left to visit & haven't found exit yet?`;
+    }
+
     window.onload = function() {
-        // part 1
         let text = `\
          A           
          A           
@@ -204,7 +247,48 @@ YN......#               VT..#....QG
            B   J   C               
            U   P   P               `;
         aoc.testCase(shortestSolutionLength, [parseInput(text),], 58);
-        // part 2
+        // no solution in recursive case
+
+        text = `\
+             Z L X W       C                 
+             Z P Q B       K                 
+  ###########.#.#.#.#######.###############  
+  #...#.......#.#.......#.#.......#.#.#...#  
+  ###.#.#.#.#.#.#.#.###.#.#.#######.#.#.###  
+  #.#...#.#.#...#.#.#...#...#...#.#.......#  
+  #.###.#######.###.###.#.###.###.#.#######  
+  #...#.......#.#...#...#.............#...#  
+  #.#########.#######.#.#######.#######.###  
+  #...#.#    F       R I       Z    #.#.#.#  
+  #.###.#    D       E C       H    #.#.#.#  
+  #.#...#                           #...#.#  
+  #.###.#                           #.###.#  
+  #.#....OA                       WB..#.#..ZH
+  #.###.#                           #.#.#.#  
+CJ......#                           #.....#  
+  #######                           #######  
+  #.#....CK                         #......IC
+  #.###.#                           #.###.#  
+  #.....#                           #...#.#  
+  ###.###                           #.#.#.#  
+XF....#.#                         RF..#.#.#  
+  #####.#                           #######  
+  #......CJ                       NM..#...#  
+  ###.#.#                           #.###.#  
+RE....#.#                           #......RF
+  ###.###        X   X       L      #.#.#.#  
+  #.....#        F   Q       P      #.#.#.#  
+  ###.###########.###.#######.#########.###  
+  #.....#...#.....#.......#...#.....#.#...#  
+  #####.#.###.#######.#######.###.###.#.#.#  
+  #.......#.......#.#.#.#.#...#...#...#.#.#  
+  #####.###.#####.#.#.#.#.###.###.#.###.###  
+  #.......#.....#.#...#...............#...#  
+  #############.#.#.###.###################  
+               A O F   N                     
+               A A D   M                     `;
+        aoc.testCase(shortestRecursiveSolutionLength, [parseInput(text),], 396);
+        
         document.querySelector("#testResults").innerHTML = "All tests passed!";
     };
     
@@ -216,10 +300,10 @@ YN......#               VT..#....QG
                 expected: 432,
             };
         },
-        solvePart2: (signal) => {
+        solvePart2: (map) => {
             return {
-                actual: testFFTAtOffset(signal, 100),
-                expected: "47664469",
+                actual: shortestRecursiveSolutionLength(map),
+                expected: 5214,
             };
         },
     };
