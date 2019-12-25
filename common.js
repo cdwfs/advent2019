@@ -75,7 +75,7 @@ let aoc = function() {
                     if (child < size() && isHigher(elems[child+1], elems[child])) {
                         ++child;
                     }
-                    if (isHigher(val, child)) {
+                    if (isHigher(val, elems[child])) {
                         break;
                     }
                     elems[i] = elems[child];
@@ -86,6 +86,7 @@ let aoc = function() {
             let push = function(...es) {
                 for(let e of es) {
                     let i = elems.length;
+                    elems.push(e);
                     while (i > baseIndex) {
                         const p = parent(i);
                         if (isHigher(elems[p], e)) {
@@ -95,6 +96,7 @@ let aoc = function() {
                         i = p;
                     }
                     elems[i] = e;
+                    //validate();
                 }
             };
             let peek = function() {
@@ -113,7 +115,15 @@ let aoc = function() {
                     elems[baseIndex] = back;
                     heapify(baseIndex);
                 }
+                //validate();
                 return top;
+            };
+            let validate = function() {
+                for(let i=baseIndex+1; i<elems.length; ++i) {
+                    if (isHigher(elems[i], elems[parent(i)])) {
+                        throw `PQ invariant failure!`;
+                    }
+                }
             };
             return {
                 size: size,
@@ -121,6 +131,7 @@ let aoc = function() {
                 push: push,
                 peek: peek,
                 pop: pop,
+                validate: validate,
             };
         },
     };
