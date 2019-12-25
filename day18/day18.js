@@ -17,6 +17,7 @@ let aoc18 = function() {
         map.keyPos = {};
         map.doorPos = {};
         map.foundKeys = [];
+        map.youKey = "@";
         for(let y=0; y<map.height; ++y) {
             for(let x=0; x<map.width; ++x) {
                 const c = map.grid[y][x];
@@ -64,54 +65,37 @@ let aoc18 = function() {
         reader.readAsText(firstFile);
     }
 
-    function minStepsToGetAllKeys(map, bestSoFar) {
-        let logProgress = false;
-        if (!bestSoFar) {
-            logProgress = true;
-            bestSoFar = Infinity;
-        }
-        //printMap(map);
-        //console.log(`best: ${bestSoFar}`);
-        // TODO: Precompute [startKey, endKey -> length, which keys needed
-        
-        // If this state has no keys left, we're done; 
-        if (Object.keys(map.keyPos).length === 0) {
-            if (map.stepCount < bestSoFar) {
-                console.log("best: " + Math.min(map.stepCount, bestSoFar));
-                return map.stepCount;
-            }
-            return bestSoFar;
-        }
+    // returns an object mapping keys to #steps to that key from the provided start pos. Unreachable keys will have no entries.
+    function shortestPathToKeys(state, startPos) {
         // Find shortest path to all reachable keys. Just flood-fill with djikstra until that proves too slow.
         let stepsToKey = {};
-        const [yx,yy] = map.youPos;
         let visitedHashes = {};
         let toVisit = [
-            [yx,yy,0,],
+            [startPos[0],startPos[1],0,],
         ];
         while(toVisit.length > 0) {
             const [px,py,steps] = toVisit.shift();
             // Skip if we've been here already
-            const hash = py*map.width + px;
+            const hash = py*state.width + px;
             if (visitedHashes.hasOwnProperty(hash)) {
                 continue;
             }
             visitedHashes[hash] = 1;
             // If the current cell is a key, record the step count
-            const pc = map.grid[py][px];
+            const pc = state.grid[py][px];
             if ("a" <= pc && pc <= "z") {
                 console.assert(!stepsToKey.hasOwnProperty(pc), `Already have a shortest path to key ${pc}`);
                 stepsToKey[pc] = steps;
-                //console.log(`${steps} steps from ${yx},${yy} to key ${pc} at ${px},${py}`);
+                //console.log(`${steps} steps from ${startPos[0]},${startPos[1]} to key ${pc} at ${px},${py}`);
                 continue;
             }
             // Add passable neighbors to the toVisit list
             const neighbors = [ [px+1,py,], [px-1,py,], [px,py+1,], [px,py-1,], ];
             for(const [nx,ny] of neighbors) {
-                if (nx < 0 || nx >= map.width || ny < 0 || ny >= map.height) {
+                if (nx < 0 || nx >= state.width || ny < 0 || ny >= state.height) {
                     continue;
                 }
-                const nc = map.grid[ny][nx];
+                const nc = state.grid[ny][nx];
                 if (nc === "#") {
                     continue; // wall
                 } else if ("A" <= nc && nc <= "Z") {
@@ -121,48 +105,165 @@ let aoc18 = function() {
                 }
             }
         }
-        // For each reachable key:
-        // - If getting this key is worse than the best possible path, skip the key
-        // - make new state: move to that key, unlock its doors, add to keysFound, update stepCount.
-        // - recurse
-        if (logProgress) {
-            console.log(stepsToKey);
-        }
-        for(const [key,steps] of Object.entries(stepsToKey)) {
-            if (logProgress) {
-                console.log(`visiting ${key}`);
+        return stepsToKey;
+    }
+    
+    function minStepsToGetAllKeys(map) {
+        function getMapHash(map) {
+            if (map.foundKeys.length === 0) {
+                return "start";
             }
-            console.assert(map.keyPos.hasOwnProperty(key), `Key doesn't exist in map?`);
-            // No sense in going further if we know we can do better
-            if (map.stepCount + steps > bestSoFar) {
+            let foundKeys = map.foundKeys.slice();
+            foundKeys.sort();
+            return map.youKey + foundKeys;
+        }
+
+        let seenMaps = {};
+        let pq = aoc.createPriorityQueue((a,b) => a.stepCount < b.stepCount);
+        pq.push(map);
+        while(!pq.empty()) {
+            // Pop the state with the shortest total path length.
+            let state = pq.pop();
+            //console.log(`After ${state.stepCount} steps, found keys [${state.foundKeys}]`);
+            // If this state has no keys left, we're done; 
+            if (Object.keys(state.keyPos).length === 0) {
+                return state.stepCount;
+            }
+            // If we've seen this map state before, abort.
+            const mapHash = getMapHash(state);
+            if (seenMaps.hasOwnProperty(mapHash)) {
                 continue;
             }
-            // - Create a new map state in which we've moved to that key, picked it up, and unlocked (removed) the corresponding door.
-            let newMap = cloneMap(map);
-            
-            newMap.stepCount += steps;
-            
-            newMap.grid[yy][yx] = ".";
-            
-            const [kx,ky] = newMap.keyPos[key];
-            console.assert(newMap.grid[ky][kx] === key, `Expected to find key ${key} here!`);
-            newMap.grid[ky][kx] = "@";
-            newMap.youPos = [kx,ky,];
-            delete newMap.keyPos[key];
-            newMap.foundKeys.push(key);
-            
-            const door = key.toUpperCase();
-            if (newMap.doorPos.hasOwnProperty(door)) {
-                const [dx,dy] = newMap.doorPos[door];
-                console.assert(newMap.grid[dy][dx] === door, `Expected to find door ${door} here!`);
-                newMap.grid[dy][dx] = ".";
-                delete newMap.doorPos[door];
-            }
+            seenMaps[mapHash] = true;
 
-            // Recurse!
-            bestSoFar = minStepsToGetAllKeys(newMap, bestSoFar);
+            // Find shortest path to all keys
+            const stepsToKey = shortestPathToKeys(state, state.youPos);
+            // For each reachable key:
+            //printMap(state);
+            const [yx,yy] = state.youPos;
+            for(const [key,steps] of Object.entries(stepsToKey)) {
+                console.assert(state.keyPos.hasOwnProperty(key), `Key doesn't exist in map?`);
+                console.assert("a" <= key && key <= "z", `Invalid key ${key} found?`);
+                console.assert(!state.foundKeys.includes(key), `Key ${key} has already been found?`);
+                const [kx,ky] = state.keyPos[key];
+                // - Create a new map state in which we've moved to that key, picked it up, and unlocked (removed) the corresponding door.
+                let newState = cloneMap(state);
+
+                newState.stepCount += steps;
+
+                newState.grid[yy][yx] = ".";
+
+                console.assert(state.grid[ky][kx] === key, `Expected to find key ${key} here!`);
+                newState.grid[ky][kx] = "@";
+                newState.youPos = [kx,ky,];
+                newState.youKey = key;
+                delete newState.keyPos[key];
+                newState.foundKeys.push(key);
+                
+                const door = key.toUpperCase();
+                if (state.doorPos.hasOwnProperty(door)) {
+                    const [dx,dy] = state.doorPos[door];
+                    console.assert(state.grid[dy][dx] === door, `Expected to find door ${door} here!`);
+                    newState.grid[dy][dx] = ".";
+                    delete newState.doorPos[door];
+                }
+                // Otherwise, add it to the list to visit later.
+                pq.push(newState);
+            }
         }
-        return bestSoFar;
+        throw `Ran out of map states & didn't find all keys?!?`;
+    }
+
+    function minStepsToGetAllKeys4(map) {
+        // Update map structure
+        const [startx,starty] = map.youPos;
+        map.grid[starty-1][startx-1] = "@";
+        map.grid[starty-1][startx  ] = "#";
+        map.grid[starty-1][startx+1] = "@";
+        map.grid[starty  ][startx-1] = "#";
+        map.grid[starty  ][startx  ] = "#";
+        map.grid[starty  ][startx+1] = "#";
+        map.grid[starty+1][startx-1] = "@";
+        map.grid[starty+1][startx  ] = "#";
+        map.grid[starty+1][startx+1] = "@";
+        //printMap(map);
+        // Store four "you" positions and keys instead of one
+        map.youPos = [
+            [startx-1, starty-1,],
+            [startx+1, starty-1,],
+            [startx-1, starty+1,],
+            [startx+1, starty+1,],
+        ];
+        map.youKey = ["@", "@", "@", "@", ];
+        // helper to hash a map state
+        function getMapHash(map) {
+            let foundKeys = map.foundKeys.slice();
+            foundKeys.sort();
+            return map.youKey.join("") + foundKeys;
+        }
+        let seenMaps = {};
+        
+        let pq = aoc.createPriorityQueue((a,b) => a.stepCount < b.stepCount);
+        pq.push(map);
+        let prevSteps = 0;
+        while(!pq.empty()) {
+            // Pop the state with the shortest total path length.
+            let state = pq.pop();
+            console.assert(state.stepCount >= prevSteps, `PQ bug!`);
+            prevSteps = state.stepCount;
+            //console.log(`After ${state.stepCount} steps, found keys [${state.foundKeys}]`);
+            // If this state has no keys left, we're done; 
+            if (Object.keys(state.keyPos).length === 0) {
+                return state.stepCount;
+            }
+            // If we've seen this map state before, abort.
+            const mapHash = getMapHash(state);
+            if (seenMaps.hasOwnProperty(mapHash)) {
+                continue;
+            }
+            seenMaps[mapHash] = true;
+            
+            for(let i=0; i<4; ++i) {
+                // Compute shortest path to each reachable key for each robot.
+                // TODO: 3/4 of this work is redundant.
+                let stepsToKey = shortestPathToKeys(state, state.youPos[i]);
+                // For each reachable key:
+                //printMap(state);
+                const [yx,yy] = state.youPos[i];
+                console.assert(state.grid[yy][yx] === "@", `Expected to find @ at youPos!`);
+                for(const [key,steps] of Object.entries(stepsToKey)) {
+                    console.assert(state.keyPos.hasOwnProperty(key), `Key doesn't exist in map?`);
+                    console.assert("a" <= key && key <= "z", `Invalid key ${key} found?`);
+                    console.assert(!state.foundKeys.includes(key), `Key ${key} has already been found?`);
+                    const [kx,ky] = state.keyPos[key];
+                    // - Create a new map state in which we've moved to that key, picked it up, and unlocked (removed) the corresponding door.
+                    let newState = cloneMap(state);
+
+                    newState.stepCount += steps;
+
+                    newState.grid[yy][yx] = ".";
+
+                    console.assert(state.grid[ky][kx] === key, `Expected to find key ${key} here!`);
+                    newState.grid[ky][kx] = "@";
+                    newState.youPos[i] = [kx,ky,];
+                    newState.youKey[i] = key;
+                    delete newState.keyPos[key];
+                    newState.foundKeys.push(key);
+                    
+                    const door = key.toUpperCase();
+                    if (state.doorPos.hasOwnProperty(door)) {
+                        const [dx,dy] = state.doorPos[door];
+                        console.assert(state.grid[dy][dx] === door, `Expected to find door ${door} here!`);
+                        newState.grid[dy][dx] = ".";
+                        delete newState.doorPos[door];
+                    }
+
+                    // Otherwise, add it to the list to visit later.
+                    pq.push(newState);
+                }
+            }
+        }
+        throw `Ran out of map states & didn't find all keys?!?`;
     }
     
     window.onload = function() {
@@ -212,7 +313,7 @@ let aoc18 = function() {
 ########.########
 #l.F..d...h..C.m#
 #################`;
-        //aoc.testCase(minStepsToGetAllKeys, [parseInput(text),], 136);
+        aoc.testCase(minStepsToGetAllKeys, [parseInput(text),], 136);
 
         text = `\
 ########################
@@ -223,7 +324,48 @@ let aoc18 = function() {
 ########################`;
         aoc.testCase(minStepsToGetAllKeys, [parseInput(text),], 81);
         
-        // part 2
+        // part 2 
+        text = `\
+#######
+#a.#Cd#
+##...##
+##.@.##
+##...##
+#cB#Ab#
+#######`;
+        aoc.testCase(minStepsToGetAllKeys4, [parseInput(text),], 8);
+
+        text = `\
+###############
+#d.ABC.#.....a#
+######...######
+######.@.######
+######...######
+#b.....#.....c#
+###############`;
+
+        text = `\
+#############
+#DcBa.#.GhKl#
+#.###...#I###
+#e#d#.@.#j#k#
+###C#...###J#
+#fEbA.#.FgHi#
+#############`;
+        aoc.testCase(minStepsToGetAllKeys4, [parseInput(text),], 32);
+
+        text = `\
+#############
+#g#f.D#..h#l#
+#F###e#E###.#
+#dCba...BcIJ#
+#####.@.#####
+#nK.L...G...#
+#M###N#H###.#
+#o#m..#i#jk.#
+#############`;
+        aoc.testCase(minStepsToGetAllKeys4, [parseInput(text),], 72);
+        
         document.querySelector("#testResults").innerHTML = "All tests passed!";
     };
     
@@ -232,13 +374,13 @@ let aoc18 = function() {
         solvePart1: (map) => {
             return {
                 actual: minStepsToGetAllKeys(map),
-                expected: 17,
+                expected: 4406,
             };
         },
-        solvePart2: (signal) => {
-             return {
-                actual: testFFTAtOffset(signal, 100),
-                expected: "47664469",
+        solvePart2: (map) => {
+            return {
+                actual: minStepsToGetAllKeys4(map),
+                expected: 1964,
             };
         },
     };
