@@ -1,3 +1,4 @@
+/* global BigInt */
 let aoc = function() {
     "use strict";
     return {
@@ -133,6 +134,37 @@ let aoc = function() {
                 pop: pop,
                 validate: validate,
             };
+        },
+
+        // Like a % b, but works if a is negative.
+        // e.g. -1 % 10 is -1, but mod(-1,10) is 9.
+        mod: function(a,b) {
+            const m = a % b;
+            return (m < 0) ? m+b : m;
+        },
+
+        // Compute pow(a,b) mod m. a,b, and m must all be numbers or all be bigints
+        modpow: function(a,b,m) {
+            function bigpow(a, b, m) {
+                if (b < 0n) {
+                    throw `exponent ${b} must be >= 0`;
+                } else if (b === 0n) {
+                    return 1n;
+                } else if (b === 1n) {
+                    return a;
+                } else if (b % 2n === 0n) {
+                    return bigpow((a * a) % m, b / 2n, m);
+                } else {
+                    return (a * bigpow((a * a) % m, (b - 1n) / 2n, m)) % m;
+                }
+            }
+            if (typeof(a) === "bigint" && typeof(b) === "bigint" && typeof(m) === "bigint") {
+                return bigpow(a,b,m);
+            } else if (typeof(a) === "number" && typeof(b) === "number" && typeof(m) === "number") {
+                return parseInt(bigpow(BigInt(a),BigInt(b),BigInt(m)));
+            } else {
+                throw `a, b, m must either all be number or all be bigints.`;
+            }
         },
     };
 }();
